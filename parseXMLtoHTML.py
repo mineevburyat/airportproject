@@ -44,6 +44,7 @@ def parsexml(filename):
     return departure
 
 def convertTXTlist(xmllist):
+    '''output lists element:'''
     MINDOPUSK = 15 #minut
     ret = []
     newelem = []
@@ -64,11 +65,68 @@ def convertTXTlist(xmllist):
         newelem = []
     return ret
 
-reqdepart = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:1,0"
-reqarrive = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:0,0"
+def convertTXTListToHTML(xmllist):
+    HTMLstartstr='''
+    <html>
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        html { overflow:  hidden; }
+        body { background:#1560bd;
+            cursor: none;  }
+        H15 { font-family: "Arial", Times, serif;
+              font-size: 22px;
+              color: #003399;
+              font-weight:bold; }
+        H14 { font-family: "Arial", Times, serif;
+              font-size: 22px;
+              color: white;
+              font-weight:bold; }
+        H16 { font-family: "Arial", Times, serif;
+              font-size: 26px;
+              color: #f7f21a;
+              font-weight:bold;}
+        tr:nth-child(2n+1) {
+              background: #333;}
+        td:nth-child(1) {
+              background: #1560bd; }
+    </style>
+    </head>
+    <body>
+    <TABLE>'''
+    for elem in xmllist:
+        rowstr ='''<TR>
+                <TD WIDTH=120 style='border-radius: 5px;'><h15>{0}</h15></TD>
+                <TD WIDTH=310><h14>{1}</h14></TD>
+                <TD WIDTH=90 ><h16>{2}</h16></TD>
+                <TD WIDTH=170 ><h14>{3}</h14></TD>
+                <TD WIDTH=170 ><h14>{4}</h14></TD>
+                </TR>'''.format(elem[0], elem[10], elem[4], elem[9], '')
+        HTMLstartstr += rowstr
+    HTMLstartstr += '</TABLE></body></html>'
+    return HTMLstartstr
+
+def saveHTMLblock(HTMLstring, filename):
+    f = open(filename,'w')
+    f.write(HTMLstring)
+    f.close()
+
+reqarrivalsall = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:1,3"
+reqdeparturesall = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:0,3"
 filenamearrive = r"/tmp/tmparrive.xml"
 filenamedepart = r"/tmp/tmpdepart.xml"
-requestandsave(reqarrive, filenamearrive)
-arrives = parsexml(filenamearrive)
-requestandsave(reqdepart, filenamedepart)
-departs = parsexml(filenamedepart)
+
+requestandsave(reqarrivalsall, filenamearrive)
+arrivals = parsexml(filenamearrive)
+saveHTMLblock(convertTXTListToHTML(arrivals),'arrival.html')
+
+requestandsave(reqdeparturesall, filenamedepart)
+departures = parsexml(filenamedepart)
+saveHTMLblock(convertTXTListToHTML(departures),'departure.html')
+
+#print("Прилеты:")
+#for arrival in arrivals:
+#    print(arrival)
+#print("Вылеты:")
+#for depart in departures:
+#    print(depart)

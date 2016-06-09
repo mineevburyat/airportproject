@@ -1,6 +1,8 @@
 # airportproject
 request the daily plan:
 http://<server >:<port>/pls/apex/f?p=1515:1:0:::NO:LAND,VID:<landing_set>,<reys_vid>
+where landing_set : 0 - get departures and 1 - get arrivels
+reys_vid - 0 - regular flights, 1 - charter flights, 2 - other flights, 3 - all flights
 get xml file from apix:
 <?xml version="1.0" encoding="UTF-8"?>
 <REPORT type="SPP">
@@ -20,7 +22,8 @@ get xml file from apix:
 	</FLY>
 </REPORT>
 request for get season schedule:
-http://<server>:<port>/pls/apex/f?p=1516:1:0:::NO:LAND,DATE,VID:{direction, 0 - out airport (departure), 1 - in airport(arrival},{from data visualised in format ddmmyyyy},{vid} where vid 0-regular flights, 1-charter flights, 2-other flights, 3-all flights.
+http://<server>:<port>/pls/apex/f?p=1516:1:0:::NO:LAND,DATE,VID:{direction, 0 - out airport (departure), 1 - in airport(arrival},
+{from data visualised in format ddmmyyyy},{vid} where vid 0-regular flights, 1-charter flights, 2-other flights, 3-all flights.
 get xml file from apix:
 <?xml version="1.0" encoding="UTF-8"?>
 <FLY number="N4-8817"> #code and flight number
