@@ -4,7 +4,8 @@ import time
 
 def requestandsave(req, filename):
     '''запросить xml и сохранить в файл'''
-    conector = HTTPConnection("93.157.148.58", 7777)
+    #conector = HTTPConnection("93.157.148.58", 7777)
+    conector = HTTPConnection("172.17.10.2", 7777)
     conector.request("GET",req)
     result = conector.getresponse()
     file = open(filename, "w")
@@ -111,8 +112,10 @@ def saveHTMLblock(HTMLstring, filename):
     f.write(HTMLstring)
     f.close()
 
-reqarrivalsall = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:1,3"
-reqdeparturesall = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:0,3"
+#reqarrivalsall = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:1,3"
+#reqdeparturesall = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:0,3"
+reqarrivalsall = "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,3"
+reqdeparturesall = "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,3"
 filenamearrive = r"/tmp/tmparrive.xml"
 filenamedepart = r"/tmp/tmpdepart.xml"
 
