@@ -2,7 +2,7 @@ from xml.etree.ElementTree import parse
 from http.client import HTTPConnection
 import time
 
-class TxtFlightInfo(list):
+class FlightInfo(list):
     '''Info about air flight. Structure: [
                                             {'FLY': '  ', #код авиакомпании и номер рейса
                                              'AIRCRAFT': '  ' #тип воздушного судна,
@@ -52,13 +52,16 @@ class TxtFlightInfo(list):
                     continue
                 reiseInfo.setdefault(ReiseElem.tag, ReiseElem.text)
             reiseInfo['PORTDIST'] = airportdist
-            reiseInfo['PUNKDIST'] = distinetion
-            reiseInfo['TIMEPLAN'] = time.mktime(time.strptime(reiseInfo['DPLAN'] + ' ' + reiseInfo['TPLAN'], '%d.%m.%Y %H:%M'))
-            if reiseInfo['TEXP'] == '' or reiseInfo['DEXP'] == '':
+            reiseInfo['PUNKTDIST'] = distinetion
+            if reiseInfo['TPLAN'] is None or reiseInfo['DPLAN'] is None:
+                reiseInfo['TIMEPLAN'] = None
+            else:
+                reiseInfo['TIMEPLAN'] = time.mktime(time.strptime(reiseInfo['DPLAN'] + ' ' + reiseInfo['TPLAN'], '%d.%m.%Y %H:%M'))
+            if reiseInfo['TEXP'] is None or reiseInfo['DEXP'] is None:
                 reiseInfo['TIMEEXP'] = None
             else:
                 reiseInfo['TIMEEXP'] = time.mktime(time.strptime(reiseInfo['DEXP'] + ' ' + reiseInfo['TEXP'], '%d.%m.%Y %H:%M'))
-            if reiseInfo['TFACT'] == '' or reiseInfo['DFACT'] == '':
+            if reiseInfo['TFACT'] is None or reiseInfo['DFACT'] is None:
                 reiseInfo['TIMEFACT'] = None
             else:
                 reiseInfo['TIMEFACT'] = time.mktime(time.strptime(reiseInfo['DFACT'] + ' ' + reiseInfo['TFACT'], '%d.%m.%Y %H:%M'))
@@ -68,7 +71,7 @@ class TxtFlightInfo(list):
     def __str__(self):
         st = ''
         for elem in self:
-            st += elem + '/n'
+            st += str(elem) + '\n'
         return st
 
     def converttoHTML(self, template, namepage=None):
@@ -78,18 +81,20 @@ class TxtFlightInfo(list):
         parts = []
         fdiscript = open(template, 'r')
         for line in fdiscript:
-            if line.find('<:separator:/>') == -1:
-                partlines += line
-            else:
+            if line.find('<!-- separator -->') != -1:
                 parts.append(partlines)
                 partlines = ''
+            else:
+                partlines += line
+        parts.append(partlines)
+        fdiscript.close()
         if len(parts) != 3:
-            print('Error')
+            print('Error - !')
         if namepage:
             parts[0] = parts[0].format(Title=namepage)
         st = ''
         for flight in self:
-            st += parts[1].format(flight)
+            st += parts[1].format(**flight)
         parts[1] = st
         st = ''.join(parts)
         return st
@@ -109,10 +114,13 @@ class TxtFlightInfo(list):
 #            self.append(info)
 #            info = {}
 
-if __name__ == 'main':
+if __name__ == '__main__':
     reqarrivalsall = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:1,3"
     reqdeparturesall = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:0,3"
-    arrivels = TxtFlightInfo("93.157.148.58", 7777, reqarrivalsall)
-    depatures = TxtFlightInfo("93.157.148.58", 7777, reqdeparturesall)
-    print(arrivels)
-    print(depatures)
+    arrivels = FlightInfo("93.157.148.58", 7777, reqarrivalsall)
+    depatures = FlightInfo("93.157.148.58", 7777, reqdeparturesall)
+    f = open('arrival.html', 'w')
+    f.write(arrivels.converttoHTML('HTMLtemplatetosite.html'))
+    f.close()
+    f = open('departure.html', 'w')
+    f.write(depatures.converttoHTML('HTMLtemplatetosite.html'))
