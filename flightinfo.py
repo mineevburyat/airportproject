@@ -2,6 +2,7 @@
 from xml.etree.ElementTree import parse
 from http.client import HTTPConnection
 import datetime as DT
+from ftplib import FTP
 
 class FlightInfo(list):
     '''Info about air flight. Structure: [
@@ -154,7 +155,7 @@ class FlightInfo(list):
                         result.append(flight)
         return result
 
-    def converttoHTML(self, template, namepage=None):
+    def converttoHTML(self, template):
         '''get and dileved template and return string in HTML. Where template is name of file. Template is frie parts: start
         , body whith data and end'''
         partlines = ''
@@ -170,8 +171,6 @@ class FlightInfo(list):
         fdiscript.close()
         if len(parts) != 3:
             print('Error - !')
-        if namepage:
-            parts[0] = parts[0].format(Title=namepage)
         st = ''
         for flight in self:
             st += parts[1].format(**flight)
@@ -179,20 +178,13 @@ class FlightInfo(list):
         st = ''.join(parts)
         return st
 
-
-#class BinFlightInfo(list):
-#    '''Structure:'''
-#    def __init__(self, textflightinfo):
-#        info = {}
-#        for flight in textflightinfo:
-#            info['TIMEPLAN'] = time.mktime(time.strptime(flight['DPLAN'] + ' ' + flight['TPLAN'], '%d.%m.%Y %H:%M'))
-#            info['TIMEEXP'] = time.mktime(time.strptime(flight['DEXP'] + ' ' + flight['TEXP'], '%d.%m.%Y %H:%M'))
-#            info['TIMEFACT'] = time.mktime(time.strptime(flight['DFACT'] + ' ' + flight['TFACT'], '%d.%m.%Y %H:%M'))
-#            for key in flight:
-#                if not key.startswith('T') or not key.startswith('D'):
-#                    info[key] = flight[key]
-#            self.append(info)
-#            info = {}
+    def savetofile(self, filename, template, filterfunc=None):
+        f = open(filename, 'w')
+        if filterfunc:
+            f.write(self.filterfunc().converttoHTML(template))
+        else:
+            f.write(self.converttoHTML(template))
+        f.close()
 
 if __name__ == '__main__':
     #astrahan
@@ -206,12 +198,21 @@ if __name__ == '__main__':
     depatures = FlightInfo()
     depatures.getfromserver("172.17.10.2", 7777, reqdeparturesall)
     #print(arrivels)
-    f = open('arrival.html', 'w')
-    f.write(arrivels.tomorrow().converttoHTML('divtemplatearrive.html'))
+    arrivels.savetofile('online_arrivals.php', 'tmponline_arrivals.php')
+    depatures.savetofile('online_departure.php', 'tmponline_departure.php')
+    ftp = FTP('93.170.129.93')
+    ftp.login(user='airport_upload', passwd='7xXS2VZA')
+    filename = 'online_departure.php'
+    f = open(filename,'r')
+    ftp.storbinary('STOR ' + filename, f)
     f.close()
-    f = open('departure.html', 'w')
-    f.write(depatures.tomorrow().converttoHTML('divtemplatedepart.html'))
+    filename = 'online_arrivals.php'
+    f = open(filename, 'r')
+    ftp.storbinary('STOR ' + filename, f)
     f.close()
+    ftp.close()
+
+
     #f = open('arrivalBDC.html', 'w')
     #f.write(arrivels.converttoHTML('HTMLtamplateBDC.html'))
     #f.close()
