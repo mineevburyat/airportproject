@@ -5,7 +5,7 @@
 <tr class="tr1">
 <td width=80px><center>Рейс</center></td>
 <td width=200px><center>Направление</center></td>
-<td width=130px><center>Прибытие<br>по расписанию</center></td>
+<td width=130px><center>Прибытие<br>по расп.</center></td>
 <td width=110px><center>Статус</center></td>
 </tr>
 <!-- separator -->

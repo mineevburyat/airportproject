@@ -1,131 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <REPORT type="SPP">
-    <FLY number="БЯ-9122">
-        <AD>0</AD>
-        <AIRCRAFT>Ан-2</AIRCRAFT>
-        <PORTDIST>МАРШРУТЫ</PORTDIST>
-        <PUNKTDIST>Улан-удэ</PUNKTDIST>
-        <PORTDIST2></PORTDIST2>
-        <PUNKTDIST2></PUNKTDIST2>
-        <PORTDIST3></PORTDIST3>
-        <PUNKTDIST3></PUNKTDIST3>
-        <CARRNAME>ПАНХ чартер</CARRNAME>
-        <DPLAN>15.06.2016</DPLAN>
-        <TPLAN>14:00</TPLAN>
-        <DEXP>15.06.2016</DEXP>
-        <TEXP>14:00</TEXP>
-        <DFACT>15.06.2016</DFACT>
-        <TFACT>14:00</TFACT>
-        <STATUS>Вылетел в 14:00</STATUS>
-    </FLY>
-    <FLY number="БЮ-9153">
-        <AD>0</AD>
-        <AIRCRAFT>Ан-24</AIRCRAFT>
-        <PORTDIST>ТАКСИМО</PORTDIST>
-        <PUNKTDIST>Улан-удэ</PUNKTDIST>
-        <PORTDIST2></PORTDIST2>
-        <PUNKTDIST2></PUNKTDIST2>
-        <PORTDIST3></PORTDIST3>
-        <PUNKTDIST3></PUNKTDIST3>
-        <CARRNAME>Бурятские Авиалинии</CARRNAME>
-        <DPLAN>15.06.2016</DPLAN>
-        <TPLAN>15:10</TPLAN>
-        <DEXP>15.06.2016</DEXP>
-        <TEXP>15:40</TEXP>
-        <DFACT>15.06.2016</DFACT>
-        <TFACT>15:44</TFACT>
-        <STATUS>Вылетел в 15:44</STATUS>
-    </FLY>
-    <FLY number="Y7-36">
-        <AD>0</AD>
-        <AIRCRAFT>АТР 42</AIRCRAFT>
-        <PORTDIST>КРАСНОЯРСК(ЕМВ)</PORTDIST>
-        <PUNKTDIST>Красноярск</PUNKTDIST>
-        <PORTDIST2></PORTDIST2>
-        <PUNKTDIST2></PUNKTDIST2>
-        <PORTDIST3></PORTDIST3>
-        <PUNKTDIST3></PUNKTDIST3>
-        <CARRNAME>Таймыр АК ОАО</CARRNAME>
-        <DPLAN>15.06.2016</DPLAN>
-        <TPLAN>20:15</TPLAN>
-        <DEXP>15.06.2016</DEXP>
-        <TEXP>20:15</TEXP>
-        <DFACT>15.06.2016</DFACT>
-        <TFACT>20:15</TFACT>
-        <STATUS>Вылетел в 20:15</STATUS>
-    </FLY>
-    <FLY number="РД-110">
-        <AD>0</AD>
-        <AIRCRAFT>CRJ200</AIRCRAFT>
-        <PORTDIST>ИРКУТСК</PORTDIST>
-        <PUNKTDIST>Иркутск</PUNKTDIST>
-        <PORTDIST2></PORTDIST2>
-        <PUNKTDIST2></PUNKTDIST2>
-        <PORTDIST3></PORTDIST3>
-        <PUNKTDIST3></PUNKTDIST3>
-        <CARRNAME>ИрАэро     АК</CARRNAME>
-        <DPLAN>15.06.2016</DPLAN>
-        <TPLAN>23:40</TPLAN>
-        <DEXP>15.06.2016</DEXP>
-        <TEXP>23:40</TEXP>
-        <DFACT>15.06.2016</DFACT>
-        <TFACT>23:41</TFACT>
-        <STATUS>Вылетел в 23:41</STATUS>
-    </FLY>
-    <FLY number="У6-344">
-        <AD>0</AD>
-        <AIRCRAFT>А-319</AIRCRAFT>
-        <PORTDIST>МОСКВА (ДМД-DME)</PORTDIST>
-        <PUNKTDIST>Москва</PUNKTDIST>
-        <PORTDIST2></PORTDIST2>
-        <PUNKTDIST2></PUNKTDIST2>
-        <PORTDIST3></PORTDIST3>
-        <PUNKTDIST3></PUNKTDIST3>
-        <CARRNAME>Уральские авиалинии</CARRNAME>
-        <DPLAN>16.06.2016</DPLAN>
-        <TPLAN>08:30</TPLAN>
-        <DEXP>16.06.2016</DEXP>
-        <TEXP>08:30</TEXP>
-        <DFACT>16.06.2016</DFACT>
-        <TFACT>08:35</TFACT>
-        <STATUS>Вылетел в 08:35</STATUS>
-    </FLY>
-    <FLY number="МЧС-31130">
-        <AD>0</AD>
-        <AIRCRAFT>Бе-200</AIRCRAFT>
-        <PORTDIST>по респуб. Бурятия</PORTDIST>
-        <PUNKTDIST>Улан-удэ</PUNKTDIST>
-        <PORTDIST2></PORTDIST2>
-        <PUNKTDIST2></PUNKTDIST2>
-        <PORTDIST3></PORTDIST3>
-        <PUNKTDIST3></PUNKTDIST3>
-        <CARRNAME>МЧС Краснояр. ФГБУ</CARRNAME>
-        <DPLAN>16.06.2016</DPLAN>
-        <TPLAN>09:00</TPLAN>
-        <DEXP>16.06.2016</DEXP>
-        <TEXP>09:00</TEXP>
-        <DFACT>16.06.2016</DFACT>
-        <TFACT>09:00</TFACT>
-        <STATUS>Вылетел в 09:00</STATUS>
-    </FLY>
-    <FLY number="S7-116">
-        <AD>0</AD>
-        <AIRCRAFT>А-320</AIRCRAFT>
-        <PORTDIST>МОСКВА (ДМД-DME)</PORTDIST>
-        <PUNKTDIST>Москва</PUNKTDIST>
-        <PORTDIST2></PORTDIST2>
-        <PUNKTDIST2></PUNKTDIST2>
-        <PORTDIST3></PORTDIST3>
-        <PUNKTDIST3></PUNKTDIST3>
-        <CARRNAME>Сибирь АК</CARRNAME>
-        <DPLAN>16.06.2016</DPLAN>
-        <TPLAN>09:25</TPLAN>
-        <DEXP>16.06.2016</DEXP>
-        <TEXP>09:25</TEXP>
-        <DFACT>16.06.2016</DFACT>
-        <TFACT>09:27</TFACT>
-        <STATUS>Вылетел в 09:27</STATUS>
-    </FLY>
     <FLY number="БЮ-9153">
         <AD>0</AD>
         <AIRCRAFT>Ан-24</AIRCRAFT>
@@ -144,22 +18,22 @@
         <TFACT>09:35</TFACT>
         <STATUS>Вылетел в 09:35</STATUS>
     </FLY>
-    <FLY number="S7-525">
+    <FLY number="БЮ-9155">
         <AD>0</AD>
-        <AIRCRAFT>А-320</AIRCRAFT>
-        <PORTDIST>ПЕКИН</PORTDIST>
-        <PUNKTDIST>Пекин</PUNKTDIST>
+        <AIRCRAFT>Ан-24</AIRCRAFT>
+        <PORTDIST>ТАКСИМО</PORTDIST>
+        <PUNKTDIST>Улан-удэ</PUNKTDIST>
         <PORTDIST2></PORTDIST2>
         <PUNKTDIST2></PUNKTDIST2>
         <PORTDIST3></PORTDIST3>
         <PUNKTDIST3></PUNKTDIST3>
-        <CARRNAME>Сибирь АК</CARRNAME>
-        <DPLAN>17.06.2016</DPLAN>
-        <TPLAN>04:45</TPLAN>
-        <DEXP>17.06.2016</DEXP>
-        <TEXP>04:45</TEXP>
-        <DFACT/>
-        <TFACT/>
-        <STATUS></STATUS>
+        <CARRNAME>Бурятские Авиалинии</CARRNAME>
+        <DPLAN>16.06.2016</DPLAN>
+        <TPLAN>16:40</TPLAN>
+        <DEXP>16.06.2016</DEXP>
+        <TEXP>16:40</TEXP>
+        <DFACT>16.06.2016</DFACT>
+        <TFACT>16:44</TFACT>
+        <STATUS>Вылетел в 16:44</STATUS>
     </FLY>
 </REPORT>

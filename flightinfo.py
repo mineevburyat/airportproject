@@ -5,23 +5,13 @@ import datetime as DT
 from ftplib import FTP
 
 class FlightInfo(list):
-    '''Info about air flight. Structure: [
-                                            {'AD': 'вылет или прилет
-                                             'FLY': '  ',
-                                             'AIRCRAFT': '  '
-                                             'PUNKTDIST': '  ',
-                                             'PORTDIST': '   ',
-                                             'CARRNAME': '   ',
-                                             'TPLAN': '   ',
-                                             'DPLAN': '   ',
-                                             'TEXP': '',
-                                             'DEXP': '',
-                                             'TFACT': '',
-                                             'DFACT': '',
-                                             'STATUS': '',
-                                             'TIMEFACT': '',
-                                             'TIMEPLAN': '  ',
-                                             'TIMEEXP': ''},
+    '''Info about air flight. Structure:
+    [
+      {'AD': ' ', FLY': '  ', 'AIRCRAFT': '  ', 'PUNKTDIST': '  ',
+      'PORTDIST': '   ', 'CARRNAME': '   ', 'TPLAN': '   ', 'DPLAN': '   ',
+      'TEXP': '', 'DEXP': '', 'TFACT': '', 'DFACT': '', 'STATUS': '', #this is xml data
+      'TIMEFACT': '', 'TIMEPLAN': '  ', 'TIMEEXP': '' # datatime formats
+      },
                                              {...}, ...
                                         ]
     '''
@@ -84,17 +74,19 @@ class FlightInfo(list):
                         reiseInfo['STATUS'] = 'Вылет по плану'
                     else:
                         if reiseInfo['TIMEEXP'] - DT.timedelta(seconds=7200) > DT.datetime.now():
-                            reiseInfo['STATUS'] = 'Вылет по расчетному времени'
+                            reiseInfo['STATUS'] = 'Вылет по расч. времени ' + reiseInfo['TEXP']
                         elif reiseInfo['TIMEEXP'] - DT.timedelta(seconds=7200) >= DT.datetime.now() >= reiseInfo['TIMEEXP'] - DT.timedelta(seconds=2400):
                             reiseInfo['STATUS'] = 'Регистрация пассажиров и багажа'
                         elif reiseInfo['TIMEEXP'] - DT.timedelta(seconds=2400) > DT.datetime.now() >= reiseInfo['TIMEEXP']:
                             reiseInfo['STATUS'] = 'Посадка пассажиров на борт'
+                        else:
+                            reiseInfo['STATUS'] = ''
                 #arrivels
                 else:
                     if reiseInfo['TIMEEXP'] is None:
                         reiseInfo['STATUS'] = 'Прилет ожидается по плану'
                     else:
-                        reiseInfo['STATUS'] = 'Прилет по расчетному времени'
+                        reiseInfo['STATUS'] = 'Прилет по расч. времени ' + reiseInfo['TEXP']
             self.append(reiseInfo)
             reiseInfo = {}
 
@@ -179,44 +171,51 @@ class FlightInfo(list):
 
         return st
 
-    def savetofile(self, filename, template, filterfunc=None):
-        f = open(filename, 'w', encoding='cp1251')
-        if filterfunc:
-            f.write(self.filterfunc().converttoHTML(template))
-        else:
-            f.write(self.converttoHTML(template))
+    def savetofile(self, filename, template, codepage='utf-8'):
+        f = open(filename, 'w', encoding=codepage)
+        f.write(self.converttoHTML(template))
         f.close()
+
+def sendfiletoftp(filename, server, username=None, password=None):
+    ftp = FTP(server, username, password)
+    file = open(filename, 'rb')
+    ftp.storlines('STOR '+filename, file)
+    file.close()
+    ftp.close()
+
+def getflighttime(flight):
+    return flight['TIMEPLAN']
 
 if __name__ == '__main__':
     #astrahan
     # reqarrivalsall = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:1,3"
     # reqdeparturesall = "/pls/apex/f?p=1511:1:0:::NO:LAND,VID:0,3"
     #internal apex server 93.157.148.58
-    reqarrivalsall = "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,3"
-    reqdeparturesall = "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,3"
+    reqarrivalsreg = "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0"
+    reqarrivalschart = "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,1"
+    reqdeparturesreg = "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0"
+    reqdepartureschart = "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,1"
     arrivels = FlightInfo()
-    arrivels.getfromserver("172.17.10.2", 7777, reqarrivalsall)
+    arrivels.getfromserver("172.17.10.2", 7777, reqarrivalsreg)
+    arrivels.getfromserver("172.17.10.2", 7777, reqarrivalschart)
     depatures = FlightInfo()
-    depatures.getfromserver("172.17.10.2", 7777, reqdeparturesall)
-    #print(arrivels)
-    arrivels.today().savetofile('online_arrivals.php', 'tmponline_arrivals.php')
-    depatures.today().savetofile('online_departure.php', 'tmponline_departure.php')
-    ftp = FTP('93.170.129.93')
-    ftp.login(user='airport_upload', passwd='7xXS2VZA')
-    filename = 'online_departure.php'
-    f = open(filename,'rb')
-    ftp.storlines('STOR ' + filename, f)
-    f.close()
-    filename = 'online_arrivals.php'
-    f = open(filename, 'rb')
-    ftp.storlines('STOR ' + filename, f)
-    f.close()
-    ftp.close()
+    depatures.getfromserver("172.17.10.2", 7777, reqdeparturesreg)
+    depatures.getfromserver("172.17.10.2", 7777, reqdepartureschart)
 
+    depatures.sort(key=getflighttime)
+    arrivels.sort(key=getflighttime)
 
-    #f = open('arrivalBDC.html', 'w')
-    #f.write(arrivels.converttoHTML('HTMLtamplateBDC.html'))
-    #f.close()
-    #f = open('departureBDC.html', 'w')
-    #f.write(depatures.converttoHTML('HTMLtamplateBDC.html'))
-    #f.close()
+    arrivels.today().savetofile('online_arrivals.php', 'tmponline_arrivals.php', 'cp1251')
+    depatures.today().savetofile('online_departure.php', 'tmponline_departure.php', 'cp1251')
+    sendfiletoftp('online_arrivals.php', '93.170.129.93', 'airport_upload', '7xXS2VZA')
+    sendfiletoftp('online_departure.php', '93.170.129.93', 'airport_upload', '7xXS2VZA')
+
+    arrivels.savetofile('bdc_arrivals.php', 'templatebdc.php', 'cp1251')
+    depatures.savetofile('bdc_departure.php', 'templatebdc.php', 'cp1251')
+    sendfiletoftp('bdc_arrivals.php', '93.170.129.93', 'airport_upload', '7xXS2VZA')
+    sendfiletoftp('bdc_departure.php', '93.170.129.93', 'airport_upload', '7xXS2VZA')
+
+    arrivels.today().savetofile('arrivals.php', 'templatebdc.php', 'cp1251')
+    depatures.today().savetofile('departure.php', 'templatebdc.php', 'cp1251')
+    sendfiletoftp('arrivals.php', '172.17.10.120', 'admin', '34652817')
+    sendfiletoftp('departure.php', '172.17.10.120', 'admin', '34652817')
