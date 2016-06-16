@@ -176,10 +176,11 @@ class FlightInfo(list):
             st += parts[1].format(**flight)
         parts[1] = st
         st = ''.join(parts)
+
         return st
 
     def savetofile(self, filename, template, filterfunc=None):
-        f = open(filename, 'w')
+        f = open(filename, 'w', encoding='cp1251')
         if filterfunc:
             f.write(self.filterfunc().converttoHTML(template))
         else:
@@ -198,17 +199,17 @@ if __name__ == '__main__':
     depatures = FlightInfo()
     depatures.getfromserver("172.17.10.2", 7777, reqdeparturesall)
     #print(arrivels)
-    arrivels.savetofile('online_arrivals.php', 'tmponline_arrivals.php')
-    depatures.savetofile('online_departure.php', 'tmponline_departure.php')
+    arrivels.today().savetofile('online_arrivals.php', 'tmponline_arrivals.php')
+    depatures.today().savetofile('online_departure.php', 'tmponline_departure.php')
     ftp = FTP('93.170.129.93')
     ftp.login(user='airport_upload', passwd='7xXS2VZA')
     filename = 'online_departure.php'
-    f = open(filename,'r')
-    ftp.storbinary('STOR ' + filename, f)
+    f = open(filename,'rb')
+    ftp.storlines('STOR ' + filename, f)
     f.close()
     filename = 'online_arrivals.php'
-    f = open(filename, 'r')
-    ftp.storbinary('STOR ' + filename, f)
+    f = open(filename, 'rb')
+    ftp.storlines('STOR ' + filename, f)
     f.close()
     ftp.close()
 
