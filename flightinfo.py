@@ -227,14 +227,15 @@ if __name__ == '__main__':
     arrivals = Flights()
     arrivals.getfromserver(*arrivalxmlreqreg)
     arrivals.getfromserver(*arrivalxmlreqchart)
-    depatures = Flights()
+    departures = Flights()
     departxmlreqreg = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0")
     departxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,1")
-    depatures.getfromserver(*departxmlreqreg)
-    depatures.getfromserver(*departxmlreqchart)
-    depatures.sort(key=getflighttime)
+    departures.getfromserver(*departxmlreqreg)
+    departures.getfromserver(*departxmlreqchart)
+    departures.sort(key=getflighttime)
     arrivals.sort(key=getflighttime)
-
+    arrivals.save('arrivals.pkl')
+    departures.save('arrivals.pkl')
     departurepicklefile = 'departures.pkl'
     arrivalspicklefile = 'arrivals.pkl'
     internalftp = ('172.17.10.120', 'admin', '34652817')
@@ -249,7 +250,7 @@ if __name__ == '__main__':
     ftablodepart = 'departure.php'
     ftabloarrive = 'arrivals.php'
 
-    arrivalsinfo = FlightsInfo()
+    '''arrivalsinfo = FlightsInfo()
     arrivalsinfo.updatefromflightes(arrivals)
     print(arrivalsinfo)
 
@@ -274,4 +275,4 @@ if __name__ == '__main__':
         print('Send arrivals')
     else:
         print('No diff on arrivals')
-        '''
+
