@@ -255,11 +255,11 @@ if __name__ == '__main__':
     print(arrivalsinfo)
 
     '''
-    if depatures.isdifferent(departurepicklefile):
-        depatures.save(departurepicklefile)
-        savetofile(depatures.today().converttoHTML(templdeparttablo), fsitedepart, 'cp1251')
-        savetofile(depatures.converttoHTML(templbdc), fbdcdepart, 'cp1251')
-        savetofile(depatures.today().converttoHTML(templbdc), ftablodepart, 'cp1251')
+    if departures.isdifferent(departurepicklefile):
+        departures.save(departurepicklefile)
+        savetofile(departures.today().converttoHTML(templdeparttablo), fsitedepart, 'cp1251')
+        savetofile(departures.converttoHTML(templbdc), fbdcdepart, 'cp1251')
+        savetofile(departures.today().converttoHTML(templbdc), ftablodepart, 'cp1251')
         sendfilestoftp([ftablodepart], *internalftp)
         sendfilestoftp([fbdcdepart, fsitedepart], *externalftp)
         print('Send departure')
