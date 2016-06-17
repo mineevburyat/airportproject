@@ -1,39 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <REPORT type="SPP">
-    <FLY number="БЮ-9153">
+    <FLY number="БЮ-9531">
         <AD>0</AD>
         <AIRCRAFT>Ан-24</AIRCRAFT>
-        <PORTDIST>ТАКСИМО</PORTDIST>
-        <PUNKTDIST>Улан-удэ</PUNKTDIST>
+        <PORTDIST>ИРКУТСК</PORTDIST>
+        <PUNKTDIST>Иркутск</PUNKTDIST>
         <PORTDIST2></PORTDIST2>
         <PUNKTDIST2></PUNKTDIST2>
         <PORTDIST3></PORTDIST3>
         <PUNKTDIST3></PUNKTDIST3>
         <CARRNAME>Бурятские Авиалинии</CARRNAME>
-        <DPLAN>16.06.2016</DPLAN>
-        <TPLAN>09:30</TPLAN>
-        <DEXP>16.06.2016</DEXP>
-        <TEXP>09:30</TEXP>
-        <DFACT>16.06.2016</DFACT>
-        <TFACT>09:35</TFACT>
-        <STATUS>Вылетел в 09:35</STATUS>
-    </FLY>
-    <FLY number="БЮ-9155">
-        <AD>0</AD>
-        <AIRCRAFT>Ан-24</AIRCRAFT>
-        <PORTDIST>ТАКСИМО</PORTDIST>
-        <PUNKTDIST>Улан-удэ</PUNKTDIST>
-        <PORTDIST2></PORTDIST2>
-        <PUNKTDIST2></PUNKTDIST2>
-        <PORTDIST3></PORTDIST3>
-        <PUNKTDIST3></PUNKTDIST3>
-        <CARRNAME>Бурятские Авиалинии</CARRNAME>
-        <DPLAN>16.06.2016</DPLAN>
-        <TPLAN>16:40</TPLAN>
-        <DEXP>16.06.2016</DEXP>
-        <TEXP>16:40</TEXP>
-        <DFACT>16.06.2016</DFACT>
-        <TFACT>16:44</TFACT>
-        <STATUS>Вылетел в 16:44</STATUS>
+        <DPLAN>17.06.2016</DPLAN>
+        <TPLAN>08:05</TPLAN>
+        <DEXP>17.06.2016</DEXP>
+        <TEXP>08:05</TEXP>
+        <DFACT>17.06.2016</DFACT>
+        <TFACT>08:05</TFACT>
+        <STATUS>Вылетел в 08:05</STATUS>
     </FLY>
 </REPORT>
