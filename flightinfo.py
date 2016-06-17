@@ -235,7 +235,7 @@ if __name__ == '__main__':
     departures.sort(key=getflighttime)
     arrivals.sort(key=getflighttime)
     arrivals.save('arrivals.pkl')
-    departures.save('arrivals.pkl')
+    departures.save('departures.pkl')
     departurepicklefile = 'departures.pkl'
     arrivalspicklefile = 'arrivals.pkl'
     internalftp = ('172.17.10.120', 'admin', '34652817')
