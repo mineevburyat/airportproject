@@ -88,14 +88,14 @@ class Flights(list):
                         if airportdist == '':
                             airportdist = flightparam.text
                         else:
-                            airportdist += ' - ' + flightparam.text
+                            airportdist += ' -<br> ' + flightparam.text
                     continue
                 if flightparam.tag.find('PUNKTDIST') != -1:
                     if flightparam.text is not None:
                         if destinetion == '':
                             destinetion = flightparam.text
                         else:
-                            destinetion +=  ' - '+ flightparam.text
+                            destinetion +=  ' -<br> '+ flightparam.text
                     continue
                 flightinfo.setdefault(flightparam.tag, flightparam.text)
             flightinfo['PORTDIST'] = airportdist
@@ -134,28 +134,33 @@ class Flights(list):
             if flight['STATUS'] is None:
                 fly = flight['FLY']
                 now = DT.datetime.now()
+                timeexp = flight['TIMEEXP']
                 #departure
                 if flight['AD'] == '0':
-                    if flight['TIMEEXP'] is None:
+                    if timeexp is None:
                         flight['STATUS'] = DEPARTPLAN
                     else:
-                        if now < flight['TIMEEXP'] - HOUR2 and not flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
+                        if now < timeexp - HOUR2 \
+                                and not flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
                             flight['STATUS'] = DEPARTTIMEEXP + flight['TEXP']
-                        elif now < flight['TIMEEXP'] - HOUR2 and flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
+                        elif now < timeexp - HOUR2 \
+                                and flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
                             flight['STATUS'] = CHECKIN + flightsinfo.getflightstatus(fly, 'CHECKIN')
-                        elif flight['TIMEEXP'] - HOUR2 <= now <= flight['TIMEEXP'] - MIN40 and not flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
+                        elif timeexp - HOUR2 <= now <= timeexp - MIN40 \
+                                and not flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
                             flight['STATUS'] = STARTCHEKIN
-                        elif flight['TIMEEXP'] - HOUR2 <= now <= flight['TIMEEXP'] - MIN40 and flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
+                        elif timeexp - HOUR2 <= now <= timeexp - MIN40 \
+                                and flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
                             flight['STATUS'] = CHECKIN + flightsinfo.getflightstatus(fly, 'CHECKIN')
-                        elif flight['TIMEEXP'] - MIN40 < now <= flight['TIMEEXP'] - MIN20:
+                        elif timeexp - MIN40 < now <= timeexp - MIN20:
                             flight['STATUS'] = BETWEENCHECKBOARD
-                        elif flight['TIMEEXP'] - MIN20 < now <= flight['TIMEEXP']:
+                        elif timeexp - MIN20 < now <= timeexp:
                             flight['STATUS'] = BOARDING
                         else:
                             flight['STATUS'] = UPDATETIMEDEPART
                 #arrivels
                 else:
-                    if flight['TIMEEXP'] is None:
+                    if timeexp is None:
                         flight['STATUS'] = ARRIVEPLAN
                     else:
                         flight['STATUS'] = ARRIVEEXP + flight['TEXP']
@@ -304,7 +309,7 @@ def getflighttime(flight):
 
 
 if __name__ == '__main__':
-    arrivalxmlreqreg = ('93.157.148.58', 7777, '/pls/apex/f?p=1511:1:0:::NO:LAND,VID:0,0')
+    '''arrivalxmlreqreg = ('93.157.148.58', 7777, '/pls/apex/f?p=1511:1:0:::NO:LAND,VID:0,0')
     arrivalxmlfile = 'arrivals.xml'
     getxmlfromserver(arrivalxmlfile, *arrivalxmlreqreg)
     arrivals = Flights()
@@ -320,21 +325,31 @@ if __name__ == '__main__':
     flightsinfo.load('arrivalsinfo.pkl')
     #for flightinfo in flightsinfo:
     print(arrivals)
-
     '''
+    xmlfile = 'xmldata.xml'
+    arrivals = Flights()
     arrivalxmlreqreg = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0")
     arrivalxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,1")
-    arrivals = Flights()
-    arrivals.getfromserver(*arrivalxmlreqreg)
-    arrivals.getfromserver(*arrivalxmlreqchart)
+    getxmlfromserver(xmlfile, *arrivalxmlreqreg)
+    arrivals.getfromxml(xmlfile)
+    getxmlfromserver(xmlfile, *arrivalxmlreqchart)
+    arrivals.getfromxml(xmlfile)
     departures = Flights()
     departxmlreqreg = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0")
     departxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,1")
-    departures.getfromserver(*departxmlreqreg)
-    departures.getfromserver(*departxmlreqchart)
+    getxmlfromserver(xmlfile, *departxmlreqreg)
+    departures.getfromxml(xmlfile)
+    getxmlfromserver(xmlfile, *departxmlreqchart)
+    departures.getfromxml(xmlfile)
     departures.sort(key=getflighttime)
     arrivals.sort(key=getflighttime)
 
+    departinfo = FlightsInfo()
+    arrivalinfo = FlightsInfo()
+    departinfo.updatefromflightes(departures)
+    arrivalinfo.updatefromflightes(arrivals)
+    departures.handlenullstatus(departinfo)
+    arrivals.handlenullstatus(arrivalinfo)
     departurepicklefile = 'departures.pkl'
     arrivalspicklefile = 'arrivals.pkl'
     internalftp = ('172.17.10.120', 'admin', '34652817')
@@ -348,13 +363,10 @@ if __name__ == '__main__':
     fbdcarrive = 'bdc_arrivals.php'
     ftablodepart = 'departure.php'
     ftabloarrive = 'arrivals.php'
-
-    #arrivalsinfo = FlightsInfo()
-    #arrivalsinfo.updatefromflightes(arrivals)
-    #print(arrivalsinfo)
-
-
-    if departures.isdifferent(departurepicklefile):
+    now = DT.datetime.now().time()
+    MIDNIGHT = DT.time(0, 0, 0)
+    MIDNIGHT5MIN = DT.time(0, 5, 0)
+    if departures.isdifferent(departurepicklefile) or (MIDNIGHT < now <= MIDNIGHT5MIN):
         departures.save(departurepicklefile)
         savetofile(departures.today().converttoHTML(templdeparttablo), fsitedepart, 'cp1251')
         savetofile(departures.converttoHTML(templbdc), fbdcdepart, 'cp1251')
@@ -364,7 +376,7 @@ if __name__ == '__main__':
         print('Send departure')
     else:
         print('No diff on departure')
-    if arrivals.isdifferent(arrivalspicklefile):
+    if arrivals.isdifferent(arrivalspicklefile) or (MIDNIGHT < now <= MIDNIGHT5MIN):
         arrivals.save(arrivalspicklefile)
         savetofile(arrivals.today().converttoHTML(templarrivaltablo), fsitearrive, 'cp1251')
         savetofile(arrivals.converttoHTML(templbdc), fbdcarrive, 'cp1251')
@@ -374,4 +386,4 @@ if __name__ == '__main__':
         print('Send arrivals')
     else:
         print('No diff on arrivals')
-'''
+
