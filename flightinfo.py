@@ -79,7 +79,10 @@ class Flights(list):
         flightinfo = {}
         tree = parse(filename)
         for fly in tree.findall('FLY'):
-            flightinfo['FLY'] = fly.attrib['number']
+            flycod = fly.attrib['number']
+            if flycod == '':
+                continue
+            flightinfo['FLY'] = flycod
             airportdist = ''
             destinetion = ''
             for flightparam in fly.getchildren():
@@ -174,53 +177,33 @@ class Flights(list):
 
     def today(self):
         result = Flights()
+        today = DT.datetime.today().date()
         for flight in self:
-            if flight['TIMEFACT'] is not None:
-                if flight['TIMEFACT'].date() == DT.datetime.today().date():
-                    result.append(flight)
-                continue
-            else:
-                if flight['TIMEEXP'] is not None:
-                    if flight['TIMEEXP'].date() == DT.datetime.today().date():
-                        result.append(flight)
-                    continue
-                else:
-                    if flight['TIMEPLAN'].date() == DT.datetime.today().date():
-                        result.append(flight)
+            #print(flight)
+            if flight['TIMEPLAN'].date() == today \
+                    or flight['TIMEEXP'].date() == today \
+                    or flight['TIMEFACT'].date() == today:
+                result.append(flight)
         return result
 
     def yesterday(self):
         result = Flights()
+        yesterday = DT.datetime.today().date() - DT.timedelta(days=1)
         for flight in self:
-            if flight['TIMEFACT'] is not None:
-                if flight['TIMEFACT'].date() == DT.datetime.today().date() - DT.timedelta(days=1):
-                    result.append(flight)
-                continue
-            else:
-                if flight['TIMEEXP'] is not None:
-                    if flight['TIMEEXP'].date() == DT.datetime.today().date() - DT.timedelta(days=1):
-                        result.append(flight)
-                    continue
-                else:
-                    if flight['TIMEPLAN'].date() == DT.datetime.today().date() - DT.timedelta(days=1):
-                        result.append(flight)
+            if flight['TIMEPLAN'].date() == yesterday\
+                    or flight['TIMEEXP'].date() == yesterday \
+                    or flight['TIMEFACT'].date() == yesterday:
+                result.append(flight)
         return result
 
     def tomorrow(self):
         result = Flights()
+        tomorrow = DT.datetime.today().date() + DT.timedelta(days=1)
         for flight in self:
-            if flight['TIMEFACT'] is not None:
-                if flight['TIMEFACT'].date() == DT.datetime.today().date() + DT.timedelta(days=1):
-                    result.append(flight)
-                continue
-            else:
-                if flight['TIMEEXP'] is not None:
-                    if flight['TIMEEXP'].date() == DT.datetime.today().date() + DT.timedelta(days=1):
-                        result.append(flight)
-                    continue
-                else:
-                    if flight['TIMEPLAN'].date() == DT.datetime.today().date() + DT.timedelta(days=1):
-                        result.append(flight)
+            if flight['TIMEPLAN'].date() == tomorrow\
+                    or flight['TIMEEXP'].date() == tomorrow \
+                    or flight['TIMEFACT'].date() == tomorrow:
+                result.append(flight)
         return result
 
     def save(self, filename):
@@ -328,26 +311,30 @@ if __name__ == '__main__':
     '''
     xmlfile = 'xmldata.xml'
     arrivals = Flights()
-    arrivalxmlreqreg = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0")
+    #arrivalxmlreqreg = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0")
     arrivalxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,1")
-    getxmlfromserver(xmlfile, *arrivalxmlreqreg)
-    arrivals.getfromxml(xmlfile)
+    #getxmlfromserver(xmlfile, *arrivalxmlreqreg)
+    #arrivals.getfromxml(xmlfile)
     getxmlfromserver(xmlfile, *arrivalxmlreqchart)
     arrivals.getfromxml(xmlfile)
+    #print(arrivals)
+    arrivals.sort(key=getflighttime)
     departures = Flights()
-    departxmlreqreg = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0")
+    #departxmlreqreg = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0")
     departxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,1")
-    getxmlfromserver(xmlfile, *departxmlreqreg)
-    departures.getfromxml(xmlfile)
+    #getxmlfromserver(xmlfile, *departxmlreqreg)
+    #departures.getfromxml(xmlfile)
     getxmlfromserver(xmlfile, *departxmlreqchart)
     departures.getfromxml(xmlfile)
+    #print(departures)
     departures.sort(key=getflighttime)
-    arrivals.sort(key=getflighttime)
+
 
     departinfo = FlightsInfo()
     arrivalinfo = FlightsInfo()
     departinfo.updatefromflightes(departures)
     arrivalinfo.updatefromflightes(arrivals)
+
     departures.handlenullstatus(departinfo)
     arrivals.handlenullstatus(arrivalinfo)
     departurepicklefile = 'departures.pkl'
