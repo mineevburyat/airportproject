@@ -125,9 +125,9 @@ class Flights(list):
         MIN20 = DT.timedelta(seconds=1200)
         DEPARTPLAN = 'Вылет по плану'
         DEPARTTIMEEXP = 'Вылет по расч. времени '
-        STARTCHEKIN = 'Начинается регистрация пассажиров и багажа'
+        STARTCHEKIN = 'Регистрация пассажиров<br>и багажа'
         CHECKIN = 'Регистрация. Стойки: '
-        BETWEENCHECKBOARD = 'Регистрация закончена. Загрузка багажа'
+        BETWEENCHECKBOARD = 'Регистрация закончена.<br>Загрузка багажа'
         BOARDING = 'Посадка пассажиров'
         UPDATETIMEDEPART = 'Уточнение времени вылета'
         ARRIVEPLAN = 'Прилет ожидается по плану'
@@ -175,20 +175,51 @@ class Flights(list):
             st += str(elem) + '\n'
         return st
 
+    def timewindow(self, pastsec=45200, futuresec=61200):
+        result = Flights()
+        now = DT.datetime.now()
+        pastdelta = DT.timedelta(seconds=pastsec)
+        futuredelta = DT.timedelta(seconds=futuresec)
+        for flight in self:
+            flag = False
+            mintime = now - pastdelta
+            maxtime = now + futuredelta
+            if mintime <= flight['TIMEPLAN'] <= maxtime:
+                flag = True
+            else:
+                if flight['TIMEEXP'] is not None:
+                    if mintime < flight['TIMEEXP'] < maxtime:
+                        flag = True
+                else:
+                    if flight['TIMEFACT'] is not None:
+                        if mintime < flight['TIMEFACT'] < maxtime:
+                            flag = True
+            if flag:
+                result.append(flight)
+        return result
+
     def today(self):
         result = Flights()
         today = DT.datetime.today().date()
         for flight in self:
-            #print(flight)
-            if flight['TIMEPLAN'].date() == today \
-                    or flight['TIMEEXP'].date() == today \
-                    or flight['TIMEFACT'].date() == today:
+            flag = False
+            if flight['TIMEPLAN'].date() == today:
+                flag = True
+            else:
+                if flight['TIMEEXP'] is not None:
+                    if flight['TIMEEXP'].date() == today:
+                        flag = True
+                if flight['TIMEFACT'] is not None:
+                    if flight['TIMEFACT'].date() == today:
+                        flag = True
+            if flag:
                 result.append(flight)
         return result
 
     def yesterday(self):
         result = Flights()
         yesterday = DT.datetime.today().date() - DT.timedelta(days=1)
+
         for flight in self:
             if flight['TIMEPLAN'].date() == yesterday\
                     or flight['TIMEEXP'].date() == yesterday \
@@ -341,7 +372,7 @@ if __name__ == '__main__':
     arrivalspicklefile = 'arrivals.pkl'
     internalftp = ('172.17.10.120', 'admin', '34652817')
     externalftp = ('93.170.129.93', 'airport_upload', '7xXS2VZA')
-    templdeparttablo = 'tmponline_departure.php'
+    templdeparttablo = 'tmponline_arrivals.php'
     templarrivaltablo = 'tmponline_arrivals.php'
     templbdc = 'templatebdc.php'
     fsitedepart = 'online_departure.php'
@@ -355,9 +386,9 @@ if __name__ == '__main__':
     MIDNIGHT5MIN = DT.time(0, 5, 0)
     if departures.isdifferent(departurepicklefile) or (MIDNIGHT < now <= MIDNIGHT5MIN):
         departures.save(departurepicklefile)
-        savetofile(departures.today().converttoHTML(templdeparttablo), fsitedepart, 'cp1251')
+        savetofile(departures.timewindow().converttoHTML(templdeparttablo), fsitedepart, 'cp1251')
         savetofile(departures.converttoHTML(templbdc), fbdcdepart, 'cp1251')
-        savetofile(departures.today().converttoHTML(templbdc), ftablodepart, 'cp1251')
+        savetofile(departures.timewindow().converttoHTML(templbdc), ftablodepart, 'cp1251')
         sendfilestoftp([ftablodepart], *internalftp)
         sendfilestoftp([fbdcdepart, fsitedepart], *externalftp)
         print('Send departure')
@@ -365,9 +396,9 @@ if __name__ == '__main__':
         print('No diff on departure')
     if arrivals.isdifferent(arrivalspicklefile) or (MIDNIGHT < now <= MIDNIGHT5MIN):
         arrivals.save(arrivalspicklefile)
-        savetofile(arrivals.today().converttoHTML(templarrivaltablo), fsitearrive, 'cp1251')
+        savetofile(arrivals.timewindow().converttoHTML(templarrivaltablo), fsitearrive, 'cp1251')
         savetofile(arrivals.converttoHTML(templbdc), fbdcarrive, 'cp1251')
-        savetofile(arrivals.today().converttoHTML(templbdc),ftabloarrive, 'cp1251')
+        savetofile(arrivals.timewindow().converttoHTML(templbdc),ftabloarrive, 'cp1251')
         sendfilestoftp([ftabloarrive], *internalftp)
         sendfilestoftp([fsitearrive, fbdcarrive], *externalftp)
         print('Send arrivals')
