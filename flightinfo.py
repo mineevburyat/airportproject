@@ -4,60 +4,11 @@ from xml.etree.ElementTree import parse
 import datetime as DT
 from ftplib import FTP
 import pickle
+import configparser
 if int(sys.version_info[0]) == 3:
     from http.client import HTTPConnection
 else:
     raise Exception("Version python less then 3")
-
-class FlightsInfo(dict):
-    '''Structure: {'FLY': {STATUSCHECKIN: , STATUSBOARD: , STATUSBAG,
-                            CHECKIN: '', GATE: '', BAGGAGE: '' '''
-    def __init__(self):
-        self = {}
-
-    def updatefromflightes(self, flights):
-        flynewinfo = {'STATCHECKIN': False, 'STATBOARD': False, 'STATBAGG': False,
-                  'CHECKINS': '', 'GATE': '', 'BAGGAGE': ''}
-        for flight in flights:
-            fly = flight['FLY']
-            if fly in self:
-                continue
-            else:
-                self.setdefault(fly, flynewinfo)
-        currentflylst = []
-        for flight in flights:
-            currentflylst.append(flight['FLY'])
-        for fly in self:
-            if fly not in currentflylst:
-                self.pop(fly)
-
-    def __str__(self):
-        st = ''
-        for flightinfo in self:
-            st += str(flightinfo) + ': ' + str(self[flightinfo]) + '\n'
-        return st
-
-    def save(self, filename):
-        f = open(filename, 'wb')
-        pickle.dump(self, f)
-
-    def load(self, filename):
-        try:
-            f = open(filename, 'rb')
-        except FileNotFoundError:
-            return False
-        self = pickle.load(f)
-        return True
-
-    def getflightstatus(self, fly, param):
-        '''param mast be STATCHECIN, STATBAGG, STATBOARD, GATE, CHECKINS, BAGGAGE'''
-        params = ['STATCHECKIN', 'STATBOARD', 'STATBAGG', 'CHECKINS', 'GATE', 'BAGGAGE']
-        if param not in params:
-            raise Exception('Parametr not in permissions list')
-        if fly in self:
-            return self[fly][param]
-        else:
-            return None
 
 class Flights(list):
     '''Info about air flight. Structure:
@@ -119,7 +70,7 @@ class Flights(list):
             self.append(flightinfo)
             flightinfo = {}
 
-    def handlenullstatus(self, flightsinfo):
+    def handlenullstatus(self):
         HOUR2 = DT.timedelta(seconds=7200)
         MIN40 = DT.timedelta(seconds=2400)
         MIN20 = DT.timedelta(seconds=1200)
@@ -143,18 +94,10 @@ class Flights(list):
                     if timeexp is None:
                         flight['STATUS'] = DEPARTPLAN
                     else:
-                        if now < timeexp - HOUR2 \
-                                and not flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
+                        if now < timeexp - HOUR2:
                             flight['STATUS'] = DEPARTTIMEEXP + flight['TEXP']
-                        elif now < timeexp - HOUR2 \
-                                and flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
-                            flight['STATUS'] = CHECKIN + flightsinfo.getflightstatus(fly, 'CHECKIN')
-                        elif timeexp - HOUR2 <= now <= timeexp - MIN40 \
-                                and not flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
+                        elif timeexp - HOUR2 <= now <= timeexp - MIN40:
                             flight['STATUS'] = STARTCHEKIN
-                        elif timeexp - HOUR2 <= now <= timeexp - MIN40 \
-                                and flightsinfo.getflightstatus(fly, 'STATCHECKIN'):
-                            flight['STATUS'] = CHECKIN + flightsinfo.getflightstatus(fly, 'CHECKIN')
                         elif timeexp - MIN40 < now <= timeexp - MIN20:
                             flight['STATUS'] = BETWEENCHECKBOARD
                         elif timeexp - MIN20 < now <= timeexp:
@@ -167,7 +110,6 @@ class Flights(list):
                         flight['STATUS'] = ARRIVEPLAN
                     else:
                         flight['STATUS'] = ARRIVEEXP + flight['TEXP']
-
 
     def __str__(self):
         st = ''
@@ -343,7 +285,7 @@ if __name__ == '__main__':
     xmlfile = 'xmldata.xml'
     arrivals = Flights()
     #arrivalxmlreqreg = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0")
-    arrivalxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,1")
+    arrivalxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0")
     #getxmlfromserver(xmlfile, *arrivalxmlreqreg)
     #arrivals.getfromxml(xmlfile)
     getxmlfromserver(xmlfile, *arrivalxmlreqchart)
@@ -352,7 +294,7 @@ if __name__ == '__main__':
     arrivals.sort(key=getflighttime)
     departures = Flights()
     #departxmlreqreg = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0")
-    departxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,1")
+    departxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0")
     #getxmlfromserver(xmlfile, *departxmlreqreg)
     #departures.getfromxml(xmlfile)
     getxmlfromserver(xmlfile, *departxmlreqchart)
@@ -360,18 +302,10 @@ if __name__ == '__main__':
     #print(departures)
     departures.sort(key=getflighttime)
 
-
-    departinfo = FlightsInfo()
-    arrivalinfo = FlightsInfo()
-    departinfo.updatefromflightes(departures)
-    arrivalinfo.updatefromflightes(arrivals)
-
-    departures.handlenullstatus(departinfo)
-    arrivals.handlenullstatus(arrivalinfo)
+    departures.handlenullstatus()
+    arrivals.handlenullstatus()
     departurepicklefile = 'departures.pkl'
     arrivalspicklefile = 'arrivals.pkl'
-    internalftp = ('172.17.10.120', 'admin', '34652817')
-    externalftp = ('93.170.129.93', 'airport_upload', '7xXS2VZA')
     templdeparttablo = 'tmponline_arrivals.php'
     templarrivaltablo = 'tmponline_arrivals.php'
     templbdc = 'templatebdc.php'
@@ -381,26 +315,48 @@ if __name__ == '__main__':
     fbdcarrive = 'bdc_arrivals.php'
     ftablodepart = 'departure.php'
     ftabloarrive = 'arrivals.php'
+    fileconf = 'config.ini'
+    try:
+        conf = configparser.RawConfigParser()
+        conf.read(fileconf)
+        internalftp = (conf.get('internalftp', 'server'), conf.get('internalftp','user'),
+                   conf.get('internalftp','pass'))
+        externalftp = (conf.get('externalftp', 'server'), conf.get('externalftp','user'),
+                   conf.get('externalftp','pass'))
+    except configparser.NoSectionError:
+        print('Error in config file: ', fileconf)
+        exit()
     now = DT.datetime.now().time()
-    MIDNIGHT = DT.time(0, 0, 0)
-    MIDNIGHT5MIN = DT.time(0, 5, 0)
-    if departures.isdifferent(departurepicklefile) or (MIDNIGHT < now <= MIDNIGHT5MIN):
+
+    if departures.isdifferent(departurepicklefile) or (0 <= now.minute <= 2):
         departures.save(departurepicklefile)
         savetofile(departures.timewindow().converttoHTML(templdeparttablo), fsitedepart, 'cp1251')
         savetofile(departures.converttoHTML(templbdc), fbdcdepart, 'cp1251')
         savetofile(departures.timewindow().converttoHTML(templbdc), ftablodepart, 'cp1251')
-        sendfilestoftp([ftablodepart], *internalftp)
-        sendfilestoftp([fbdcdepart, fsitedepart], *externalftp)
+        try:
+            sendfilestoftp([ftablodepart], *internalftp)
+        except TimeoutError:
+            print('Timeout ftp connection', internalftp[0])
+        try:
+            sendfilestoftp([fbdcdepart, fsitedepart], *externalftp)
+        except TimeoutError:
+            print('Timeout ftp connection', internalftp[0])
         print('Send departure')
     else:
         print('No diff on departure')
-    if arrivals.isdifferent(arrivalspicklefile) or (MIDNIGHT < now <= MIDNIGHT5MIN):
+    if arrivals.isdifferent(arrivalspicklefile) or (0 <= now.minute <= 2):
         arrivals.save(arrivalspicklefile)
         savetofile(arrivals.timewindow().converttoHTML(templarrivaltablo), fsitearrive, 'cp1251')
         savetofile(arrivals.converttoHTML(templbdc), fbdcarrive, 'cp1251')
         savetofile(arrivals.timewindow().converttoHTML(templbdc),ftabloarrive, 'cp1251')
-        sendfilestoftp([ftabloarrive], *internalftp)
-        sendfilestoftp([fsitearrive, fbdcarrive], *externalftp)
+        try:
+            sendfilestoftp([ftabloarrive], *internalftp)
+        except TimeoutError:
+            print('Timeout ftp connection', internalftp[0])
+        try:
+            sendfilestoftp([fsitearrive, fbdcarrive], *externalftp)
+        except TimeoutError:
+            print('Timeout ftp connection', internalftp[0])
         print('Send arrivals')
     else:
         print('No diff on arrivals')
