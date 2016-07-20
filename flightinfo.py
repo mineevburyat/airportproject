@@ -75,14 +75,14 @@ class Flights(list):
         MIN40 = DT.timedelta(seconds=2400)
         MIN20 = DT.timedelta(seconds=1200)
         DEPARTPLAN = 'Вылет по плану'
-        DEPARTTIMEEXP = 'Вылет по расч. времени '
+        DEPARTTIMEEXP = 'Вылет в '
         STARTCHEKIN = 'Регистрация пассажиров<br>и багажа'
         CHECKIN = 'Регистрация. Стойки: '
         BETWEENCHECKBOARD = 'Регистрация закончена.<br>Загрузка багажа'
         BOARDING = 'Посадка пассажиров'
         UPDATETIMEDEPART = 'Уточнение времени вылета'
-        ARRIVEPLAN = 'Прилет ожидается по плану'
-        ARRIVEEXP = 'Прилет по расч. времени '
+        ARRIVEPLAN = 'Ожидается по плану'
+        ARRIVEEXP = 'Ожидается в '
         #отработать пустые статусы
         for flight in self:
             if flight['STATUS'] is None:
@@ -117,7 +117,7 @@ class Flights(list):
             st += str(elem) + '\n'
         return st
 
-    def timewindow(self, pastsec=45200, futuresec=61200):
+    def timewindow(self, pastsec=21600, futuresec=61200):
         result = Flights()
         now = DT.datetime.now()
         pastdelta = DT.timedelta(seconds=pastsec)
@@ -265,41 +265,16 @@ def getflighttime(flight):
 
 
 if __name__ == '__main__':
-    '''arrivalxmlreqreg = ('93.157.148.58', 7777, '/pls/apex/f?p=1511:1:0:::NO:LAND,VID:0,0')
-    arrivalxmlfile = 'arrivals.xml'
-    getxmlfromserver(arrivalxmlfile, *arrivalxmlreqreg)
-    arrivals = Flights()
-    arrivals.getfromxml(arrivalxmlfile)
-
-    flightsinfo = FlightsInfo()
-    flightsinfo.updatefromflightes(arrivals)
-    arrivals.handlenullstatus(flightsinfo)
-    if arrivals.isdifferent('arrivals.pkl'):
-        savetofile(arrivals.converttoHTML('templatebdc.php'), 'test.php')
-    print(flightsinfo)
-    flightsinfo.save('arrivalsinfo.pkl')
-    flightsinfo.load('arrivalsinfo.pkl')
-    #for flightinfo in flightsinfo:
-    print(arrivals)
-    '''
     xmlfile = 'xmldata.xml'
     arrivals = Flights()
-    #arrivalxmlreqreg = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0")
     arrivalxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0")
-    #getxmlfromserver(xmlfile, *arrivalxmlreqreg)
-    #arrivals.getfromxml(xmlfile)
     getxmlfromserver(xmlfile, *arrivalxmlreqchart)
     arrivals.getfromxml(xmlfile)
-    #print(arrivals)
     arrivals.sort(key=getflighttime)
     departures = Flights()
-    #departxmlreqreg = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0")
     departxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0")
-    #getxmlfromserver(xmlfile, *departxmlreqreg)
-    #departures.getfromxml(xmlfile)
     getxmlfromserver(xmlfile, *departxmlreqchart)
     departures.getfromxml(xmlfile)
-    #print(departures)
     departures.sort(key=getflighttime)
 
     departures.handlenullstatus()
