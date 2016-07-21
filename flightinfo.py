@@ -76,11 +76,11 @@ class Flights(list):
         MIN20 = DT.timedelta(seconds=1200)
         DEPARTPLAN = 'Вылет по плану'
         DEPARTTIMEEXP = 'Вылет в '
-        STARTCHEKIN = 'Регистрация пассажиров<br>и багажа'
+        STARTCHEKIN = 'Регистрация пассажиров'
         CHECKIN = 'Регистрация. Стойки: '
-        BETWEENCHECKBOARD = 'Регистрация закончена.<br>Загрузка багажа'
+        BETWEENCHECKBOARD = 'Регистрация закончена.'
         BOARDING = 'Посадка пассажиров'
-        UPDATETIMEDEPART = 'Уточнение времени вылета'
+        UPDATETIMEDEPART = 'Посадка закончена'
         ARRIVEPLAN = 'Ожидается по плану'
         ARRIVEEXP = 'Ожидается в '
         #отработать пустые статусы
