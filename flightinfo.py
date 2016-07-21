@@ -78,9 +78,9 @@ class Flights(list):
         DEPARTTIMEEXP = 'Вылет в '
         STARTCHEKIN = 'Регистрация пассажиров'
         CHECKIN = 'Регистрация. Стойки: '
-        BETWEENCHECKBOARD = 'Регистрация закончена.'
+        BETWEENCHECKBOARD = 'Регистрация закрыта'
         BOARDING = 'Посадка пассажиров'
-        UPDATETIMEDEPART = 'Посадка закончена'
+        UPDATETIMEDEPART = 'Посадка закрыта'
         ARRIVEPLAN = 'Ожидается по плану'
         ARRIVEEXP = 'Ожидается в '
         #отработать пустые статусы
