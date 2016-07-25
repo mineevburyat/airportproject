@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import os
 from xml.etree.ElementTree import parse
 import datetime as DT
 from ftplib import FTP
@@ -276,7 +277,7 @@ if __name__ == '__main__':
     getxmlfromserver(xmlfile, *departxmlreqchart)
     departures.getfromxml(xmlfile)
     departures.sort(key=getflighttime)
-
+    os.remove(xmlfile)
     departures.handlenullstatus()
     arrivals.handlenullstatus()
     departurepicklefile = 'departures.pkl'
@@ -284,6 +285,7 @@ if __name__ == '__main__':
     templdeparttablo = 'tmponline_arrivals.php'
     templarrivaltablo = 'tmponline_arrivals.php'
     templbdc = 'templatebdc.php'
+
     fsitedepart = 'online_departure.php'
     fsitearrive = 'online_arrivals.php'
     fbdcdepart = 'bdc_departure.php'
@@ -303,36 +305,32 @@ if __name__ == '__main__':
         exit()
     now = DT.datetime.now().time()
 
-    if departures.isdifferent(departurepicklefile) or (0 <= now.minute <= 2):
-        departures.save(departurepicklefile)
-        savetofile(departures.timewindow().converttoHTML(templdeparttablo), fsitedepart, 'cp1251')
-        savetofile(departures.converttoHTML(templbdc), fbdcdepart, 'cp1251')
-        savetofile(departures.timewindow().converttoHTML(templbdc), ftablodepart, 'cp1251')
-        try:
-            sendfilestoftp([ftablodepart], *internalftp)
-        except TimeoutError:
-            print('Timeout ftp connection', internalftp[0])
-        try:
-            sendfilestoftp([fbdcdepart, fsitedepart], *externalftp)
-        except TimeoutError:
-            print('Timeout ftp connection', internalftp[0])
-        print('Send departure')
-    else:
-        print('No diff on departure')
-    if arrivals.isdifferent(arrivalspicklefile) or (0 <= now.minute <= 2):
-        arrivals.save(arrivalspicklefile)
-        savetofile(arrivals.timewindow().converttoHTML(templarrivaltablo), fsitearrive, 'cp1251')
-        savetofile(arrivals.converttoHTML(templbdc), fbdcarrive, 'cp1251')
-        savetofile(arrivals.timewindow().converttoHTML(templbdc),ftabloarrive, 'cp1251')
-        try:
-            sendfilestoftp([ftabloarrive], *internalftp)
-        except TimeoutError:
-            print('Timeout ftp connection', internalftp[0])
-        try:
-            sendfilestoftp([fsitearrive, fbdcarrive], *externalftp)
-        except TimeoutError:
-            print('Timeout ftp connection', internalftp[0])
-        print('Send arrivals')
-    else:
-        print('No diff on arrivals')
+    for picklefile,fly,fsite,fbdc,ftablo in [(departurepicklefile,departures,fsitedepart,fbdcdepart,ftablodepart),
+                                            (arrivalspicklefile, arrivals,fsitearrive,fbdcarrive,ftabloarrive)]:
+        if fly.isdifferent(picklefile) or (0 <= now.minute <= 1):
+            fly.save(picklefile)
+            savetofile(fly.timewindow().converttoHTML(templdeparttablo), fsite, 'cp1251')
+            savetofile(fly.converttoHTML(templbdc), fbdc, 'cp1251')
+            savetofile(fly.timewindow().converttoHTML(templbdc), ftablo, 'cp1251')
+            try:
+                sendfilestoftp([ftablo], *internalftp)
+            except TimeoutError:
+                print('Timeout ftp connection', internalftp[0])
+                os.remove(picklefile)
+            else:
+                print('Send to internal ftp')
+            finally:
+                os.remove(ftablo)
+            try:
+                sendfilestoftp([fbdc, fsite], *externalftp)
+            except TimeoutError:
+                print('Timeout ftp connection', externalftp[0])
+                os.remove(picklefile)
+            else:
+                print('Send to external ftp')
+            finally:
+                os.remove(fbdc)
+                os.remove(fsite)
+
+
 
