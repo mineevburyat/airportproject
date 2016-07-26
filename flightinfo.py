@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
+import logging
 from xml.etree.ElementTree import parse
 import datetime as DT
 from ftplib import FTP
@@ -266,15 +267,24 @@ def getflighttime(flight):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG,format='%(asctime)s - %(levelname)s - %(message)s')
     xmlfile = 'xmldata.xml'
     arrivals = Flights()
-    arrivalxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0")
-    getxmlfromserver(xmlfile, *arrivalxmlreqchart)
+    arrivalxmlreq = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0")
+    try:
+        getxmlfromserver(xmlfile, *arrivalxmlreq)
+    except OSError:
+        logging.critical('Error in connect on AODB ' + arrivalxmlreq[0])
+        exit()
     arrivals.getfromxml(xmlfile)
     arrivals.sort(key=getflighttime)
     departures = Flights()
-    departxmlreqchart = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0")
-    getxmlfromserver(xmlfile, *departxmlreqchart)
+    departxmlreq = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0")
+    try:
+        getxmlfromserver(xmlfile, *departxmlreq)
+    except OSError:
+        logging.critical('Error in connect on AODB ' + departxmlreq[0])
+        exit()
     departures.getfromxml(xmlfile)
     departures.sort(key=getflighttime)
     os.remove(xmlfile)
@@ -301,7 +311,7 @@ if __name__ == '__main__':
         externalftp = (conf.get('externalftp', 'server'), conf.get('externalftp','user'),
                    conf.get('externalftp','pass'))
     except configparser.NoSectionError:
-        print('Error in config file: ', fileconf)
+        logging.critical('Error in config file: ' + fileconf)
         exit()
     now = DT.datetime.now().time()
 
@@ -315,19 +325,19 @@ if __name__ == '__main__':
             try:
                 sendfilestoftp([ftablo], *internalftp)
             except TimeoutError:
-                print('Timeout ftp connection', internalftp[0])
+                logging.error('Timeout ftp connection ' + internalftp[0])
                 os.remove(picklefile)
             else:
-                print('Send to internal ftp')
+                logging.warning('Send to internal ftp')
             finally:
                 os.remove(ftablo)
             try:
                 sendfilestoftp([fbdc, fsite], *externalftp)
             except TimeoutError:
-                print('Timeout ftp connection', externalftp[0])
+                logging.error('Timeout ftp connection', externalftp[0])
                 os.remove(picklefile)
             else:
-                print('Send to external ftp')
+                logging.warning('Send to external ftp')
             finally:
                 os.remove(fbdc)
                 os.remove(fsite)
