@@ -28,7 +28,7 @@ class Flights(list):
         self = []
 
     def getfromxml(self, filename):
-        '''начать парсить xml файл в удобную структуру'''
+        '''начать парсить xml файл в структуру класса'''
         flightinfo = {}
         tree = parse(filename)
         for fly in tree.findall('FLY'):
@@ -73,6 +73,7 @@ class Flights(list):
             flightinfo = {}
 
     def handlenullstatus(self):
+        '''Отработать пустые статусы'''
         HOUR2 = DT.timedelta(seconds=7200)
         MIN40 = DT.timedelta(seconds=2400)
         MIN20 = DT.timedelta(seconds=1200)
@@ -120,6 +121,7 @@ class Flights(list):
         return st
 
     def timewindow(self, pastsec=21600, futuresec=61200):
+        '''Временное окно'''
         result = Flights()
         now = DT.datetime.now()
         pastdelta = DT.timedelta(seconds=pastsec)
@@ -182,11 +184,13 @@ class Flights(list):
         return result
 
     def save(self, filename):
+        '''Сохранить класс в файл'''
         f = open(filename, 'wb')
         pickle.dump(self, f)
         return True
 
     def load(self, filename):
+        '''Загрузить класс из файла'''
         try:
             f = open(filename, 'rb')
         except FileNotFoundError:
@@ -195,6 +199,7 @@ class Flights(list):
         return True
 
     def isdifferent(self, picklefile):
+        '''Сравнить текущий класс с сохраненным в файле'''
         flag = False
         try:
             f = open(picklefile, 'rb')
@@ -231,6 +236,21 @@ class Flights(list):
         parts[1] = st
         st = ''.join(parts)
         return st
+
+    def departures(self):
+        result = Flights()
+        for flight in self:
+            if flight['AD'] == '0':
+                result.append(flight)
+        return result
+
+    def arrivals(self):
+        result = Flights()
+        for flight in self:
+            if flight['AD'] == '1':
+                result.append(flight)
+        return result
+
 
 def savetofile(str, filename, codepage='utf-8'):
         f = open(filename, 'w', encoding=codepage)
@@ -269,31 +289,33 @@ def getflighttime(flight):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG,format='%(asctime)s - %(levelname)s - %(message)s')
     xmlfile = 'xmldata.xml'
-    arrivals = Flights()
-    arrivalxmlreq = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0")
+    fileconf = 'config.ini'
     try:
-        getxmlfromserver(xmlfile, *arrivalxmlreq)
-    except OSError:
-        logging.critical('Error in connect on AODB ' + arrivalxmlreq[0])
+        conf = configparser.RawConfigParser()
+        conf.read(fileconf)
+        internalftp = (conf.get('internalftp', 'server'), conf.get('internalftp', 'user'),
+                       conf.get('internalftp', 'pass'))
+        externalftp = (conf.get('externalftp', 'server'), conf.get('externalftp', 'user'),
+                       conf.get('externalftp', 'pass'))
+        AODB = (conf.get('AODB', 'server'), conf.get('AODB', 'port'))
+        arrivalrequest = conf.get('AODB', 'arrivalurl')
+        departurerequest = conf.get('AODB', 'departureurl')
+    except configparser.NoSectionError:
+        logging.critical('Error in config file: ' + fileconf)
         exit()
-    arrivals.getfromxml(xmlfile)
-    arrivals.sort(key=getflighttime)
-    departures = Flights()
-    departxmlreq = ('172.17.10.2', 7777, "/pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0")
-    try:
-        getxmlfromserver(xmlfile, *departxmlreq)
-    except OSError:
-        logging.critical('Error in connect on AODB ' + departxmlreq[0])
-        exit()
-    departures.getfromxml(xmlfile)
-    departures.sort(key=getflighttime)
+    fly = Flights()
+    for xmlreq in [(AODB[0], AODB[1], arrivalrequest), (AODB[0], AODB[1], departurerequest)]:
+        try:
+            getxmlfromserver(xmlfile, *xmlreq)
+        except OSError:
+            logging.critical('Error in connect on AODB ' + str(xmlreq))
+            exit()
+        fly.getfromxml(xmlfile)
     os.remove(xmlfile)
-    departures.handlenullstatus()
-    arrivals.handlenullstatus()
-    departurepicklefile = 'departures.pkl'
-    arrivalspicklefile = 'arrivals.pkl'
-    templdeparttablo = 'tmponline_arrivals.php'
-    templarrivaltablo = 'tmponline_arrivals.php'
+    fly.sort(key=getflighttime)
+    fly.handlenullstatus()
+    picklefile = 'fly.pkl'
+    templatetablo = 'tmponline.php'
     templbdc = 'templatebdc.php'
 
     fsitedepart = 'online_departure.php'
@@ -302,33 +324,21 @@ if __name__ == '__main__':
     fbdcarrive = 'bdc_arrivals.php'
     ftablodepart = 'departure.php'
     ftabloarrive = 'arrivals.php'
-    fileconf = 'config.ini'
-    try:
-        conf = configparser.RawConfigParser()
-        conf.read(fileconf)
-        internalftp = (conf.get('internalftp', 'server'), conf.get('internalftp','user'),
-                   conf.get('internalftp','pass'))
-        externalftp = (conf.get('externalftp', 'server'), conf.get('externalftp','user'),
-                   conf.get('externalftp','pass'))
-    except configparser.NoSectionError:
-        logging.critical('Error in config file: ' + fileconf)
-        exit()
     now = DT.datetime.now().time()
-
-    for picklefile,fly,fsite,fbdc,ftablo in [(departurepicklefile,departures,fsitedepart,fbdcdepart,ftablodepart),
-                                            (arrivalspicklefile, arrivals,fsitearrive,fbdcarrive,ftabloarrive)]:
-        if fly.isdifferent(picklefile) or (0 <= now.minute <= 1):
-            fly.save(picklefile)
-            savetofile(fly.timewindow().converttoHTML(templdeparttablo), fsite, 'cp1251')
-            savetofile(fly.converttoHTML(templbdc), fbdc, 'cp1251')
-            savetofile(fly.timewindow().converttoHTML(templbdc), ftablo, 'cp1251')
+    if fly.isdifferent(picklefile) or (0 <= now.minute <= 1):
+        fly.save(picklefile)
+        for flyselect, fsite, fbdc, ftablo in [(fly.departures(), fsitedepart, fbdcdepart, ftablodepart),
+                                         (fly.arrivals(), fsitearrive, fbdcarrive, ftabloarrive)]:
+            savetofile(flyselect.timewindow().converttoHTML(templatetablo), fsite, 'cp1251')
+            savetofile(flyselect.converttoHTML(templbdc), fbdc, 'cp1251')
+            savetofile(flyselect.timewindow().converttoHTML(templbdc), ftablo, 'cp1251')
             try:
                 sendfilestoftp([ftablo], *internalftp)
             except TimeoutError:
                 logging.error('Timeout ftp connection ' + internalftp[0])
                 os.remove(picklefile)
             else:
-                logging.warning('Send to internal ftp')
+                logging.info('Send to internal ftp')
             finally:
                 os.remove(ftablo)
             try:
@@ -337,10 +347,13 @@ if __name__ == '__main__':
                 logging.error('Timeout ftp connection', externalftp[0])
                 os.remove(picklefile)
             else:
-                logging.warning('Send to external ftp')
+                logging.info('Send to external ftp')
             finally:
                 os.remove(fbdc)
                 os.remove(fsite)
+    else:
+        logging.info('No different')
+
 
 
 
