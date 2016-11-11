@@ -359,6 +359,11 @@ if __name__ == '__main__':
                 os.remove(fsite)
             if not ErrorFlag:
                 fly.save(picklefile)
+            else:
+                try:
+                    os.remove(pickle)
+                except Exception:
+                    pass
     else:
         logging.info('No different')
 
