@@ -324,9 +324,9 @@ if __name__ == '__main__':
     fbdcarrive = 'bdc_arrivals.php'
     ftablodepart = 'departure.php'
     ftabloarrive = 'arrivals.php'
+    ErrorFlag = False
     now = DT.datetime.now().time()
     if fly.isdifferent(picklefile) or (0 <= now.minute <= 1):
-        fly.save(picklefile)
         for flyselect, fsite, fbdc, ftablo in [(fly.departures(), fsitedepart, fbdcdepart, ftablodepart),
                                          (fly.arrivals(), fsitearrive, fbdcarrive, ftabloarrive)]:
             savetofile(flyselect.timewindow().converttoHTML(templatetablo), fsite, 'cp1251')
@@ -336,7 +336,10 @@ if __name__ == '__main__':
                 sendfilestoftp([ftablo], *internalftp)
             except TimeoutError:
                 logging.error('Timeout ftp connection ' + internalftp[0])
-                os.remove(picklefile)
+                ErrorFlag = True
+            except Exception:
+                logging.error('Other ftp error ' + internalftp[0])
+                ErrorFlag = True
             else:
                 logging.info('Send to internal ftp')
             finally:
@@ -345,15 +348,18 @@ if __name__ == '__main__':
                 sendfilestoftp([fbdc, fsite], *externalftp)
             except TimeoutError:
                 logging.error('Timeout ftp connection', externalftp[0])
-                os.remove(picklefile)
+                ErrorFlag = True
+            except Exception:
+                logging.error('Other ftp error ' + externalftp[0])
+                ErrorFlag = True
             else:
                 logging.info('Send to external ftp')
             finally:
                 os.remove(fbdc)
                 os.remove(fsite)
+            if not ErrorFlag:
+                fly.save(picklefile)
     else:
         logging.info('No different')
-
-
 
 
