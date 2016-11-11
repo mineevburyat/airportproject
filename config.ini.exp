@@ -1,0 +1,15 @@
+[AODB]
+server = 172.17.10.2
+port = 7777
+arrivalurl = /pls/apex/f?p=1515:1:0:::NO:LAND,VID:1,0
+departureurl = /pls/apex/f?p=1515:1:0:::NO:LAND,VID:0,0
+
+[internalftp]
+server = 172.17.10.120
+user =
+pass =
+
+[externalftp]
+server =
+user =
+pass =
